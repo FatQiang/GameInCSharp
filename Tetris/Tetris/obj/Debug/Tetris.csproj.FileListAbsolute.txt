@@ -1,0 +1,8 @@
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.csprojResolveAssemblyReference.cache
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.MainForm.resources
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.Properties.Resources.resources
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.csproj.GenerateResource.Cache
+E:\Project\Code\Tetris\Tetris\bin\Debug\Tetris.exe
+E:\Project\Code\Tetris\Tetris\bin\Debug\Tetris.pdb
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.exe
+E:\Project\Code\Tetris\Tetris\obj\Debug\Tetris.pdb
