@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -45,28 +44,23 @@ namespace Sokoban
         /// 初始化
         /// </summary>
         /// <param name="pPictureBox"></param>
-        public SokobanManager(PictureBox pPictureBox)
+        public SokobanManager(PictureBox pPictureBox,LevelClass pLevel)
         {
             this.m_PictureBox = pPictureBox;
 
-            this.m_Map = new int[,]
-            {
-                { 0,5,0,1,1,1,0,0},
-                { 0,0,0,0,1,1,0,0},
-                { 0,1,0,0,0,0,0,0},
-                { 0,0,0,1,1,0,0,0},
-                { 1,0,0,0,1,1,1,0},
-                { 0,0,1,0,0,0,0,0},
-                { 0,0,0,0,5,0,0,0},
-                { 1,1,1,0,0,0,0,0}
-            };
+            this.m_Map = pLevel.Map;
 
-            this.m_ManRowIndex = 6;
-            this.m_ManColumnIndex = 1;
+            this.m_ManRowIndex = pLevel.ManLocation[0];
+            this.m_ManColumnIndex = pLevel.ManLocation[1];
 
             this.m_BoxList = new Dictionary<int, int[]>();
-            this.m_BoxList.Add(0, new int[] { 1, 2 });
-            this.m_BoxList.Add(1, new int[] { 6, 6 });
+
+            for (int i = 0; i < pLevel.BoxList.Count; i++)
+            {
+                this.m_BoxList.Add(i, pLevel.BoxList[i]);
+            }
+
+            this.m_ManImage = Properties.Resources.right;
 
             this.Refresh();
         }
@@ -98,13 +92,17 @@ namespace Sokoban
         private Timer m_Timer;
 
         /// <summary>
+        /// 缓存当前人的状态的图片
+        /// </summary>
+        private Bitmap m_ManImage = null;
+
+        /// <summary>
         /// 人移动方向，0向上，1向下，2向左，3向右
         /// </summary>
         /// <param name="pDirection"></param>
         /// <returns></returns>
         public void Move(int pDirection)
         {
-            //0正视图，1左视图，2后视图，3右视图
             if (!this.Moving)
             {
                 int tManRowIndex = this.m_ManRowIndex, tManColumnIndex = this.m_ManColumnIndex;
@@ -120,24 +118,28 @@ namespace Sokoban
                         tNextColumnIndex = tManColumnIndex;
                         tNextNextRowIndex = tManRowIndex - 2;
                         tNextNextColumnIndex = tManColumnIndex;
+                        this.m_ManImage = Properties.Resources.up;
                         break;
                     case 1:
                         tNextRowIndex = tManRowIndex + 1;
                         tNextColumnIndex = tManColumnIndex;
                         tNextNextRowIndex = tManRowIndex + 2;
                         tNextNextColumnIndex = tManColumnIndex;
+                        this.m_ManImage = Properties.Resources.down;
                         break;
                     case 2:
                         tNextRowIndex = tManRowIndex;
                         tNextColumnIndex = tManColumnIndex - 1;
                         tNextNextRowIndex = tManRowIndex;
                         tNextNextColumnIndex = tManColumnIndex - 2;
+                        this.m_ManImage = Properties.Resources.left;
                         break;
                     case 3:
                         tNextRowIndex = tManRowIndex;
                         tNextColumnIndex = tManColumnIndex + 1;
                         tNextNextRowIndex = tManRowIndex;
                         tNextNextColumnIndex = tManColumnIndex + 2;
+                        this.m_ManImage = Properties.Resources.right;
                         break;
                     default: break;
                 }
@@ -372,6 +374,23 @@ namespace Sokoban
                     this.m_BoxList.Remove(tMovingBoxKey);
                     this.m_BoxList.Add(tMovingBoxKey, new int[] { tBoxNextRowIndex, tBoxNextColumnIndex });
                 }
+
+                bool tWin = true;
+                //判断是否赢了
+                foreach (KeyValuePair<int, int[]> tKeyValue in this.m_BoxList)
+                {
+                    if (this.m_Map[tKeyValue.Value[0], tKeyValue.Value[1]] != 5)
+                    {
+                        tWin = false;
+                        break;
+                    }
+                }
+                if (tWin)
+                {
+                    MessageBox.Show("成功！");
+                    this.m_Moving = true;
+                }
+
                 this.Refresh();
             }
         }
@@ -461,25 +480,14 @@ namespace Sokoban
         /// <param name="pSpeed"></param>
         private void DrawMan(Graphics pGraphics, int pRowIndex, int pColumnIndex, PointF pVectorRow, PointF pVectorColumn, PointF pUpCenter, float pWallHeight, PointF pSpeed)
         {
-            PointF tPoint0 = new PointF(pUpCenter.X + pColumnIndex * pVectorRow.X + pRowIndex * pVectorColumn.X + pSpeed.X * this.m_Interval, pUpCenter.Y + pColumnIndex * pVectorColumn.Y + pRowIndex * pVectorColumn.Y + pSpeed.Y * this.m_Interval);
-            PointF tPoint1 = new PointF(tPoint0.X, tPoint0.Y - pWallHeight);
-            PointF tPoint2 = new PointF(tPoint1.X + pVectorRow.X, tPoint1.Y + pVectorRow.Y);
-            PointF tPoint3 = new PointF(tPoint2.X + pVectorColumn.X, tPoint2.Y + pVectorColumn.Y);
-            PointF tPoint4 = new PointF(tPoint1.X + pVectorColumn.X, tPoint1.Y + pVectorColumn.Y);
-            PointF tPoint5 = new PointF(tPoint3.X, tPoint3.Y + pWallHeight);
-            PointF tPoint6 = new PointF(tPoint4.X, tPoint4.Y + pWallHeight);
-            PointF tPoint7 = new PointF(tPoint2.X, tPoint2.Y + pWallHeight);
-            PointF tPoint8 = new PointF(tPoint1.X, tPoint1.Y - pWallHeight);
-            PointF tPoint9 = new PointF(tPoint2.X, tPoint2.Y - pWallHeight);
-            PointF tPoint10 = new PointF(tPoint3.X, tPoint3.Y - pWallHeight);
-            PointF tPoint11 = new PointF(tPoint4.X, tPoint4.Y - pWallHeight);
-
-            pGraphics.FillPolygon(Brushes.Beige, new PointF[] { tPoint8, tPoint9, tPoint10, tPoint11 });
-            pGraphics.FillPolygon(Brushes.Beige, new PointF[] { tPoint10, tPoint11, tPoint6, tPoint5 });
-            pGraphics.FillPolygon(Brushes.Beige, new PointF[] { tPoint9, tPoint10, tPoint5, tPoint7 });
-            pGraphics.DrawPolygon(Pens.Gray, new PointF[] { tPoint8, tPoint9, tPoint10, tPoint11 });
-            pGraphics.DrawPolygon(Pens.Gray, new PointF[] { tPoint10, tPoint11, tPoint6, tPoint5 });
-            pGraphics.DrawPolygon(Pens.Gray, new PointF[] { tPoint9, tPoint10, tPoint5, tPoint7 });
+            PointF tPoint0 = new PointF(pUpCenter.X + pColumnIndex * pVectorRow.X + pRowIndex * pVectorColumn.X + pSpeed.X * this.m_Interval, pUpCenter.Y + pColumnIndex * pVectorColumn.Y + pRowIndex * pVectorColumn.Y + pSpeed.Y * this.m_Interval + pWallHeight/2);
+            PointF[] tPoints = null;
+            PointF tPoint1 = new PointF(tPoint0.X + pVectorColumn.X, tPoint0.Y + pVectorColumn.Y);
+            PointF tPoint2 = new PointF(tPoint1.X, tPoint1.Y - 4 * pWallHeight);
+            PointF tPoint3 = new PointF(tPoint0.X + pVectorRow.X, tPoint0.Y + pVectorRow.Y);
+            PointF tPoint4 = new PointF(tPoint3.X, tPoint3.Y - 4 * pWallHeight);
+            tPoints = new PointF[] { tPoint2, tPoint4, tPoint1 };
+            pGraphics.DrawImage(this.m_ManImage, tPoints);
         }
 
         /// <summary>
